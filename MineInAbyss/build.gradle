@@ -10,7 +10,7 @@ jar {
 
 task copyJar(type: Copy) {
     from jar // here it automatically reads jar file produced from jar task
-    into '/srv/craftbukkit/plugins/'
+    into 'C:\\Users\\pato999\\Desktop\\cod stuf\\mineinabyss\\spaghetti\\plugins'
 }
 
 build.dependsOn copyJar

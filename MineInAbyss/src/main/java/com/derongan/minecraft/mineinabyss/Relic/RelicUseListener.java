@@ -9,16 +9,18 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.inventory.InventoryInteractEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -44,6 +46,47 @@ public class RelicUseListener implements Listener {
         worldManager = context.getWorldManager();
     }
 
+    //inventory changes for registering relics
+    HashMap<UUID, PlayerRelicData> registeredPlayers;
+    public void updateRegisteredRelics(Player player) {
+        PlayerRelicData data = registeredPlayers.get(player.getUniqueId());
+        data.clear(); //cba to actually check diffs, and might be worse on performance anyway
+        data.register(player.getInventory().getHelmet(), RelicSlot.HEAD);
+		data.register(player.getInventory().getChestplate(), RelicSlot.CHEST);
+		data.register(player.getInventory().getLeggings(), RelicSlot.LEGS);
+		data.register(player.getInventory().getBoots(), RelicSlot.FEET);
+		data.register(player.getInventory().getItemInMainHand(), RelicSlot.MAIN_HAND);
+		data.register(player.getInventory().getItemInOffHand(), RelicSlot.OFF_HAND);
+    }
+    @EventHandler()
+    public void onPlayerLogin(PlayerLoginEvent e) {
+    	if (!registeredPlayers.containsKey(e.getPlayer().getUniqueId())) {
+			registeredPlayers.put(e.getPlayer().getUniqueId(), new PlayerRelicData());
+		}
+        updateRegisteredRelics(e.getPlayer());
+    }
+    @EventHandler()
+    public void onPlayerQuit(PlayerQuitEvent e) {
+        registeredPlayers.remove(e.getPlayer().getUniqueId());
+    }
+    @EventHandler()
+    public void onHeldItemChange(PlayerItemHeldEvent e) {
+        updateRegisteredRelics(e.getPlayer());
+    }
+    @EventHandler()
+	public void onInventoryInteract(InventoryInteractEvent e) {
+    	if (e.getWhoClicked() instanceof Player) {
+    		updateRegisteredRelics((Player) e.getWhoClicked());
+    	}
+	}
+
+    public <E extends Event> void activateRelics(Player player, E e) {
+    	for (RelicBehaviour b : registeredPlayers.get(player.getUniqueId()).getBehaviours(e.getClass())) {
+    		b.execute(e);
+		}
+	}
+    //end registering garbage
+
     @EventHandler()
     public void onPlayerFish(PlayerFishEvent playerFishEvent) {
     }
@@ -60,6 +103,7 @@ public class RelicUseListener implements Listener {
             return;
         }
 
+        /*
         RelicType relicType = RelicType.getRegisteredRelicType(player.getInventory().getItemInMainHand());
 
         if (relicType != null) {
@@ -68,6 +112,8 @@ public class RelicUseListener implements Listener {
             }
         }
 
+        */
+        activateRelics(player, event);
     }
 
     @EventHandler()
@@ -82,6 +128,7 @@ public class RelicUseListener implements Listener {
         if (damager instanceof Player) {
             Player player = (Player) damager;
 
+            /*
             RelicType type = RelicType.getRegisteredRelicType(player.getInventory().getItemInMainHand());
 
             if (type != null) {
@@ -91,6 +138,8 @@ public class RelicUseListener implements Listener {
                     entityDamageByEntityEvent.setCancelled(true);
                 }
             }
+            */
+            activateRelics(player, entityDamageByEntityEvent);
         }
 
     }
@@ -104,8 +153,15 @@ public class RelicUseListener implements Listener {
         RelicType relicType = ArmorStandBehaviour.registeredRelics.get(e.getRightClicked().getUniqueId());
 
         if(relicType != null){
+            /*
             if(relicType.getBehaviour() instanceof ArmorStandBehaviour){
                 ((ArmorStandBehaviour) relicType.getBehaviour()).onPlayerInteractEntity(e);
+            }
+            */
+            for (RelicBehaviour rb : relicType.getBehaviours(PlayerInteractAtEntityEvent.class)) {
+                if (rb instanceof ArmorStandBehaviour) {
+                    ((ArmorStandBehaviour) rb).onPlayerInteractEntity(e);
+                }
             }
         }
     }
@@ -117,12 +173,15 @@ public class RelicUseListener implements Listener {
         }
 
         if(e.getEntity() instanceof Player){
+            /*
             for (ItemStack itemStack : ((Player) e.getEntity()).getInventory().getArmorContents()) {
                 RelicType type = RelicType.getRegisteredRelicType(itemStack);
                 if (type != null && type.getBehaviour() instanceof OnDamageRelicBehaviour) {
                     ((OnDamageRelicBehaviour) type.getBehaviour()).onDamage(e);
                 }
             }
+            */
+            activateRelics((Player) e.getEntity(), e);
         }
     }
 
@@ -132,6 +191,7 @@ public class RelicUseListener implements Listener {
             return;
         }
 
+        /*
         RelicType type = RelicType.getRegisteredRelicType(playerInteractEvent.getItem());
 
         if (type != null) {
@@ -142,6 +202,14 @@ public class RelicUseListener implements Listener {
 				if (!(type.getBehaviour() instanceof ConsumeRelicBehaviour)) { //let eat events continue
 					playerInteractEvent.setCancelled(true);
 				}
+            }
+        }
+        */
+        activateRelics(playerInteractEvent.getPlayer(), playerInteractEvent);
+        PlayerRelicData data = registeredPlayers.get(playerInteractEvent.getPlayer().getUniqueId());
+        if (data.getBehaviours(PlayerInteractEvent.class).isEmpty()) { //" Cancel events the relic shouldn't handle"
+            if (!data.getBehaviours(PlayerItemConsumeEvent.class).isEmpty()) { //"let eat events continue"
+                playerInteractEvent.setCancelled(true);
             }
         }
 
@@ -159,6 +227,7 @@ public class RelicUseListener implements Listener {
         }
 
         Player player = chatEvent.getPlayer();
+        /*
         RelicType type = RelicType.getRegisteredRelicType(player.getInventory().getItemInMainHand());
 
         if (type != null) {
@@ -166,6 +235,8 @@ public class RelicUseListener implements Listener {
                 ((ChatRelicBehaviour) type.getBehaviour()).onChat(chatEvent);
             }
         }
+        */
+        activateRelics(player, chatEvent);
     }
 
     @EventHandler()
@@ -174,6 +245,7 @@ public class RelicUseListener implements Listener {
             return;
         }
 
+        /*
         RelicType type = RelicType.getRegisteredRelicType(e.getItem());
 
         if (type != null) {
@@ -181,6 +253,8 @@ public class RelicUseListener implements Listener {
                 ((ConsumeRelicBehaviour) type.getBehaviour()).onConsume(e);
             }
         }
+        */
+        activateRelics(e.getPlayer(), e);
     }
 }
 

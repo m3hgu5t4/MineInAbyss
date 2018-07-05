@@ -2,10 +2,14 @@ package com.derongan.minecraft.mineinabyss.Relic.Relics;
 
 import com.derongan.minecraft.mineinabyss.Relic.Behaviour.RelicBehaviour;
 import com.derongan.minecraft.mineinabyss.Relic.RelicRarity;
+import com.derongan.minecraft.mineinabyss.Relic.RelicSlot;
+import com.google.common.collect.Multimap;
 import org.bukkit.Material;
+import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,10 +25,13 @@ public interface RelicType {
 
     short getDurability();
 
-    RelicBehaviour getBehaviour();
+    //RelicBehaviour getBehaviour();
 
     RelicRarity getRarity();
 
+    Collection<Class<? extends Event>> getEvents(RelicSlot slot);
+    boolean inSlot(RelicSlot slot);
+    <E extends Event> Collection<RelicBehaviour<E>> getBehaviours(RelicSlot slot, Class<E> e);
 
     default ItemStack getItem() {
         ItemStack item = new org.bukkit.inventory.ItemStack(getMaterial(), 1, getDurability());
@@ -50,7 +57,7 @@ public interface RelicType {
     }
 
     static RelicType getRegisteredRelicType(ItemStack itemStack) {
-        if (itemStack == null) {
+        if (itemStack == null || !itemStack.getItemMeta().isUnbreakable()) {
             return null;
         }
         return getRegisteredRelicType(itemStack.getDurability(), itemStack.getType());

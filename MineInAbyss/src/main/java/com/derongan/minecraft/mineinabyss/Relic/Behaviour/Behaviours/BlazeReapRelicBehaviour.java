@@ -2,6 +2,7 @@ package com.derongan.minecraft.mineinabyss.Relic.Behaviour.Behaviours;
 
 import com.derongan.minecraft.mineinabyss.Relic.Behaviour.EntityHitRelicBehaviour;
 import com.derongan.minecraft.mineinabyss.Relic.Behaviour.UseRelicBehaviour;
+import com.derongan.minecraft.mineinabyss.Relic.Behaviour.RelicBehaviour;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;

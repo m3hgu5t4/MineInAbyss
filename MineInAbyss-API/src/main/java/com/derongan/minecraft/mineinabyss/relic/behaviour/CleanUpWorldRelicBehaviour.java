@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Relics that have locations and blocks to cleanup
  */
-public interface CleanUpWorldRelicBehaviour extends RelicBehaviour {
+public interface CleanUpWorldRelicBehaviour /*extends RelicBehaviour*/ {
     Map<Location, Runnable> registeredLocations = new ConcurrentHashMap<>();
 
     default void registerCleanupAction(Location location, Runnable runnable) {

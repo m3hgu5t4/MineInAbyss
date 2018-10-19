@@ -1,16 +1,17 @@
 package com.derongan.minecraft.mineinabyss.relic.behaviour.behaviours;
 
+import com.derongan.minecraft.mineinabyss.relic.behaviour.RelicBehaviour;
 import com.derongan.minecraft.mineinabyss.relic.behaviour.UseRelicBehaviour;
 import com.derongan.minecraft.mineinabyss.relic.relics.RelicType;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-public class ThousandMenPinsRelicBehaviour implements UseRelicBehaviour{
+public class ThousandMenPinsRelicBehaviour implements RelicBehaviour<PlayerInteractEvent> {
     private RelicType myRelic;
 
     @Override
-    public void onUse(PlayerInteractEvent event) {
+    public void execute(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         player.getInventory().getItemInMainHand().setAmount(0);
 

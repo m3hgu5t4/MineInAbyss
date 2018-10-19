@@ -1,14 +1,15 @@
 package com.derongan.minecraft.mineinabyss.relic.behaviour.behaviours;
 
 import com.derongan.minecraft.mineinabyss.relic.behaviour.InteractEntityBehaviour;
+import com.derongan.minecraft.mineinabyss.relic.behaviour.RelicBehaviour;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 
-public class SlaveRelicBehaviour implements InteractEntityBehaviour{
+public class SlaveRelicBehaviour implements RelicBehaviour<PlayerInteractEntityEvent> {
     @Override
-    public void onInteractEntity(PlayerInteractEntityEvent event) {
+    public void execute(PlayerInteractEntityEvent event) {
         Player player = event.getPlayer();
         Entity other = event.getRightClicked();
 

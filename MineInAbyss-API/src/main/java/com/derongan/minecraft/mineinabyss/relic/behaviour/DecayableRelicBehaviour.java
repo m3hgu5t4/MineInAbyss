@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * A relic that decays over time when placed on the map.
  */
-public interface DecayableRelicBehaviour extends RelicBehaviour {
+public interface DecayableRelicBehaviour /*extends RelicBehaviour*/ {
     Map<UUID, RelicInfo> registeredRelics = new ConcurrentHashMap<>();
 
 

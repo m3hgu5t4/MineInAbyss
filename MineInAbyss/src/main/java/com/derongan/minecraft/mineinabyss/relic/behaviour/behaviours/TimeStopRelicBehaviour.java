@@ -1,11 +1,12 @@
 package com.derongan.minecraft.mineinabyss.relic.behaviour.behaviours;
 
 import com.derongan.minecraft.mineinabyss.relic.behaviour.ChatRelicBehaviour;
+import com.derongan.minecraft.mineinabyss.relic.behaviour.RelicBehaviour;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
-public class TimeStopRelicBehaviour implements ChatRelicBehaviour {
+public class TimeStopRelicBehaviour implements RelicBehaviour<AsyncPlayerChatEvent> {
     @Override
-    public void onChat(AsyncPlayerChatEvent event) {
+    public void execute(AsyncPlayerChatEvent event) {
 //        if (!event.getMessage().equals("ZA WARUDO!")) {
 //            return;
 //        }

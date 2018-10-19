@@ -1,13 +1,14 @@
 package com.derongan.minecraft.mineinabyss.relic.behaviour.behaviours;
 
 import com.derongan.minecraft.mineinabyss.relic.behaviour.EntityHitRelicBehaviour;
+import com.derongan.minecraft.mineinabyss.relic.behaviour.RelicBehaviour;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.util.Vector;
 
-public class PushingRelicBehaviour implements EntityHitRelicBehaviour {
+public class PushingRelicBehaviour implements RelicBehaviour<EntityDamageByEntityEvent> {
     @Override
-    public void onHit(EntityDamageByEntityEvent event) {
+    public void execute(EntityDamageByEntityEvent event) {
         Entity damager = event.getDamager();
         Entity damagee = event.getEntity();
         Vector damagerVec = damager.getLocation().toVector();

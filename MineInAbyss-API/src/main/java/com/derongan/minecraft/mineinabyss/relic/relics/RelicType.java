@@ -2,13 +2,13 @@ package com.derongan.minecraft.mineinabyss.relic.relics;
 
 import com.derongan.minecraft.mineinabyss.relic.behaviour.RelicBehaviour;
 import com.derongan.minecraft.mineinabyss.relic.RelicRarity;
+import com.google.common.collect.HashMultimap;
 import org.bukkit.Material;
+import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public interface RelicType {
     Map<RelicTypeKey, RelicType> registeredRelics = new HashMap<>();
@@ -21,7 +21,8 @@ public interface RelicType {
 
     short getDurability();
 
-    RelicBehaviour getBehaviour();
+    public Collection<RelicBehaviour<? extends Event>> getBehaviours(Class<? extends Event> event);
+    //RelicBehaviour getBehaviour();
 
     RelicRarity getRarity();
 
@@ -89,6 +90,46 @@ public interface RelicType {
                 return false;
             RelicTypeKey other = (RelicTypeKey) o;
             return this.material.equals(other.material) && this.durability.equals(other.durability);
+        }
+    }
+
+    static class RelicTypeBuilder {
+        String name;
+        List<String> lore = new ArrayList<>();
+        Material material;
+        short damage;
+        HashMultimap<Class<? extends Event>, RelicBehaviour<? extends Event>> behaviours;
+        RelicRarity rarity;
+
+        RelicTypeBuilder setName(String name) {
+            this.name = name;
+            return this;
+        }
+        RelicTypeBuilder addLore(String... lore) {
+            for (String line : lore) {
+                this.lore.add(line);
+            }
+            return this;
+        }
+        RelicTypeBuilder setMaterial(Material material) {
+            this.material = material;
+            return this;
+        }
+        RelicTypeBuilder setDamage(short damage) {
+            this.damage = damage;
+            return this;
+        }
+        RelicTypeBuilder setDamage(int damage) {
+            return setDamage((short) damage);
+        }
+        RelicTypeBuilder setRarity(RelicRarity rarity) {
+            this.rarity = rarity;
+            return this;
+        }
+
+        <E extends Event> RelicTypeBuilder addBehaviour(Class<E> event, RelicBehaviour<E> behaviour) { // the garbage one
+            this.behaviours.put(event, behaviour);
+            return this;
         }
     }
 }

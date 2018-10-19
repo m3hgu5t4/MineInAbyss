@@ -8,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -42,6 +43,20 @@ public class RelicUseListener implements Listener {
         worldManager = context.getWorldManager();
     }
 
+    @SuppressWarnings("unchecked") //shut up generics
+    public <E extends Event> void runEvent(E event, Entity target, ItemStack item) {
+        if (!worldManager.isAbyssWorld(target.getWorld())) {
+            return;
+        }
+
+        RelicType relicType = RelicType.getRegisteredRelicType(item);
+        if (relicType != null) {
+            for (RelicBehaviour<? extends Event> behaviour : relicType.getBehaviours(event.getClass())) {
+                ((RelicBehaviour<E>) behaviour).execute(event);
+            }
+        }
+    }
+
     @EventHandler()
     public void onPlayerFish(PlayerFishEvent playerFishEvent) {
     }
@@ -54,6 +69,8 @@ public class RelicUseListener implements Listener {
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         Player player = event.getPlayer();
 
+        runEvent(event, player, player.getInventory().getItemInMainHand());
+        /*
         if(!worldManager.isAbyssWorld(event.getPlayer().getWorld())){
             return;
         }
@@ -65,6 +82,7 @@ public class RelicUseListener implements Listener {
                 ((InteractEntityBehaviour) relicType.getBehaviour()).onInteractEntity(event);
             }
         }
+        */
 
     }
 
@@ -83,9 +101,15 @@ public class RelicUseListener implements Listener {
             RelicType type = RelicType.getRegisteredRelicType(player.getInventory().getItemInMainHand());
 
             if (type != null) {
+                /*
                 if (type.getBehaviour() instanceof EntityHitRelicBehaviour) {
                     ((EntityHitRelicBehaviour) type.getBehaviour()).onHit(entityDamageByEntityEvent);
                 } else {
+                    entityDamageByEntityEvent.setCancelled(true);
+                }
+                */
+                runEvent(entityDamageByEntityEvent, player, player.getInventory().getItemInMainHand());
+                if (type.getBehaviours(EntityDamageByEntityEvent.class).size() == 0) {
                     entityDamageByEntityEvent.setCancelled(true);
                 }
             }
@@ -94,7 +118,7 @@ public class RelicUseListener implements Listener {
     }
 
     @EventHandler()
-    public void onPlayerInteractEntity(PlayerInteractAtEntityEvent e) {
+    public void onPlayerInteractEntity(PlayerInteractAtEntityEvent e) { //todo B I G  H E C K
         if(!worldManager.isAbyssWorld(e.getPlayer().getWorld())){
             return;
         }
@@ -102,24 +126,32 @@ public class RelicUseListener implements Listener {
         RelicType relicType = ArmorStandBehaviour.registeredRelics.get(e.getRightClicked().getUniqueId());
 
         if(relicType != null){
+            for (RelicBehaviour<? extends Event> rb : relicType.getBehaviours(PlayerInteractEntityEvent.class)) {
+                ((RelicBehaviour<PlayerInteractAtEntityEvent>) rb).execute(e);
+            }
+            /*
             if(relicType.getBehaviour() instanceof ArmorStandBehaviour){
                 ((ArmorStandBehaviour) relicType.getBehaviour()).onPlayerInteractEntity(e);
             }
+            */
         }
     }
 
     @EventHandler()
-    public void onEntityDamageEvent(EntityDamageEvent e){
+    public void onEntityDamageEvent(EntityDamageEvent e){ //todo replace with registered behaviours thing
         if(!worldManager.isAbyssWorld(e.getEntity().getWorld())){
             return;
         }
 
         if(e.getEntity() instanceof Player){
             for (ItemStack itemStack : ((Player) e.getEntity()).getInventory().getArmorContents()) {
+                runEvent(e, e.getEntity(), itemStack);
+                /*
                 RelicType type = RelicType.getRegisteredRelicType(itemStack);
                 if (type != null && type.getBehaviour() instanceof OnDamageRelicBehaviour) {
                     ((OnDamageRelicBehaviour) type.getBehaviour()).onDamage(e);
                 }
+                */
             }
         }
     }
@@ -133,11 +165,12 @@ public class RelicUseListener implements Listener {
         RelicType type = RelicType.getRegisteredRelicType(playerInteractEvent.getItem());
 
         if (type != null) {
-            if (type.getBehaviour() instanceof UseRelicBehaviour) {
-                ((UseRelicBehaviour) type.getBehaviour()).onUse(playerInteractEvent);
+            if (type.getBehaviours(PlayerInteractEvent.class).size() > 0) {
+                //((UseRelicBehaviour) type.getBehaviour()).onUse(playerInteractEvent);
+                runEvent(playerInteractEvent, playerInteractEvent.getPlayer(), playerInteractEvent.getItem());
             } else {
                 // Cancel events the relic shouldn't handle
-				if (!(type.getBehaviour() instanceof ConsumeRelicBehaviour)) { //let eat events continue
+				if (type.getBehaviours(PlayerItemConsumeEvent.class).size() == 0) { //let eat events continue
 					playerInteractEvent.setCancelled(true);
 				}
             }
@@ -152,6 +185,7 @@ public class RelicUseListener implements Listener {
 
     @EventHandler()
     public void onPlayerChat(AsyncPlayerChatEvent chatEvent) {
+        /*
         if(!worldManager.isAbyssWorld(chatEvent.getPlayer().getWorld())){
             return;
         }
@@ -164,10 +198,13 @@ public class RelicUseListener implements Listener {
                 ((ChatRelicBehaviour) type.getBehaviour()).onChat(chatEvent);
             }
         }
+        */
+        runEvent(chatEvent, chatEvent.getPlayer(), chatEvent.getPlayer().getInventory().getItemInMainHand());
     }
 
     @EventHandler()
     public void onPlayerConsumeItem(PlayerItemConsumeEvent e) {
+        /*
         if(!worldManager.isAbyssWorld(e.getPlayer().getWorld())){
             return;
         }
@@ -179,6 +216,8 @@ public class RelicUseListener implements Listener {
                 ((ConsumeRelicBehaviour) type.getBehaviour()).onConsume(e);
             }
         }
+        */
+        runEvent(e, e.getPlayer(), e.getPlayer().getInventory().getItemInMainHand());
     }
 }
 

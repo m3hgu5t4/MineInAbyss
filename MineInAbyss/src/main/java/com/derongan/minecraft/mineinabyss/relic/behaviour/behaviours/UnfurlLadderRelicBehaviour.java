@@ -2,6 +2,7 @@ package com.derongan.minecraft.mineinabyss.relic.behaviour.behaviours;
 
 import com.derongan.minecraft.mineinabyss.MineInAbyss;
 import com.derongan.minecraft.mineinabyss.relic.behaviour.CleanUpWorldRelicBehaviour;
+import com.derongan.minecraft.mineinabyss.relic.behaviour.RelicBehaviour;
 import com.derongan.minecraft.mineinabyss.relic.behaviour.UseRelicBehaviour;
 import com.derongan.minecraft.mineinabyss.relic.relics.RelicType;
 import com.derongan.minecraft.mineinabyss.util.TickUtils;
@@ -18,7 +19,7 @@ import org.bukkit.scheduler.BukkitScheduler;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UnfurlLadderRelicBehaviour implements UseRelicBehaviour, CleanUpWorldRelicBehaviour {
+public class UnfurlLadderRelicBehaviour implements RelicBehaviour<PlayerInteractEvent>, CleanUpWorldRelicBehaviour {
     private final int lengthLimit;
     private RelicType myRelic;
 
@@ -33,7 +34,7 @@ public class UnfurlLadderRelicBehaviour implements UseRelicBehaviour, CleanUpWor
 
     @SuppressWarnings("deprecation")
     @Override
-    public void onUse(PlayerInteractEvent event) {
+    public void execute(PlayerInteractEvent event) {
         if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK) && event.getBlockFace() != BlockFace.UP) {
             event.setCancelled(true);
 

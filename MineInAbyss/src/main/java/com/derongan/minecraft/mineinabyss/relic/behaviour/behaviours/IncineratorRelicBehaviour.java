@@ -1,5 +1,6 @@
 package com.derongan.minecraft.mineinabyss.relic.behaviour.behaviours;
 
+import com.derongan.minecraft.mineinabyss.relic.behaviour.RelicBehaviour;
 import com.derongan.minecraft.mineinabyss.relic.behaviour.UseRelicBehaviour;
 import com.derongan.minecraft.mineinabyss.relic.RelicUseListener;
 import org.bukkit.Particle;
@@ -11,9 +12,9 @@ import org.bukkit.event.player.PlayerInteractEvent;
 
 import java.util.List;
 
-public class IncineratorRelicBehaviour implements UseRelicBehaviour {
+public class IncineratorRelicBehaviour implements RelicBehaviour<PlayerInteractEvent> {
     @Override
-    public void onUse(PlayerInteractEvent event) {
+    public void execute(PlayerInteractEvent event) {
         event.setCancelled(true);
         Player player = event.getPlayer();
 
